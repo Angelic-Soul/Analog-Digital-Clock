@@ -1,0 +1,160 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digital Clock with dials</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0f1220;
+      }
+
+      .clock {
+        position: relative;
+        width: 220px;
+        overflow: hidden;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle at top, #373d6b, #0c0f1f);
+        border: 3px solid rgba(255, 255, 255, 0.15);
+        box-shadow:
+          inset 0 0 18px rgba(255, 255, 255, 0.08),
+          0 12px 30px rgba(0, 0, 0, 0.9);
+      }
+
+      .center-img {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* prevents stretching */
+        top: 0;
+        left: 0;
+        z-index: 0;
+      }
+
+      .clock::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: #ff4d6d;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+      }
+
+      .dial {
+        position: absolute;
+        bottom: 50%;
+        left: 50%;
+        transform-origin: bottom center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        pointer-events: none;
+      }
+
+      .dial div {
+        transform-origin: center;
+        padding: 2px 7px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .hour-dial {
+        height: 45px;
+        font-size: 15px;
+        color: #3faac5;
+      }
+
+      .minute-dial {
+        height: 75px;
+        font-size: 14px;
+        color: rgb(57, 59, 68);
+      }
+
+      .second-dial {
+        height: 90px;
+        font-size: 13px;
+        color: #ff4d6d;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="clock">
+      <img src="images.png" class="center-img" />
+      <div class="dial hour-dial" id="hour-dial"></div>
+      <div class="dial minute-dial" id="minute-dial"></div>
+      <div class="dial second-dial" id="second-dial"></div>
+    </div>
+
+    <script>
+      const hourDial = document.getElementById("hour-dial");
+      const minuteDial = document.getElementById("minute-dial");
+      const secondDial = document.getElementById("second-dial");
+
+      function setRepeatedNumber(element, value, repeatCount) {
+        element.innerHTML = "";
+        const text = value.toString().padStart(2, "0");
+
+        for (let i = 0; i < repeatCount; i++) {
+          const div = document.createElement("div");
+          div.textContent = text;
+          element.appendChild(div);
+        }
+      }
+
+      function animateClock() {
+        const now = new Date();
+
+        const ms = now.getMilliseconds();
+        const seconds = now.getSeconds() + ms / 1000;
+        const minutes = now.getMinutes() + seconds / 60;
+        const hours = (now.getHours() % 12) + minutes / 60;
+
+        const secondDeg = seconds * 6;
+        const minuteDeg = minutes * 6;
+        const hourDeg = hours * 30;
+
+        /* update numbers only when whole value changes */
+        setRepeatedNumber(hourDial, Math.floor(hours) || 12, 3);
+        setRepeatedNumber(minuteDial, Math.floor(minutes), 4);
+        setRepeatedNumber(secondDial, Math.floor(seconds), 5);
+
+        /* rotate dials */
+        hourDial.style.transform = `translate(-50%, 0) rotate(${hourDeg}deg)`;
+        minuteDial.style.transform = `translate(-50%, 0) rotate(${minuteDeg}deg)`;
+        secondDial.style.transform = `translate(-50%, 0) rotate(${secondDeg}deg)`;
+
+        /* counter-rotate numbers */
+        hourDial.querySelectorAll("div").forEach((div) => {
+          div.style.transform = `rotate(${-hourDeg}deg)`;
+        });
+
+        minuteDial.querySelectorAll("div").forEach((div) => {
+          div.style.transform = `rotate(${-minuteDeg}deg)`;
+        });
+
+        secondDial.querySelectorAll("div").forEach((div) => {
+          div.style.transform = `rotate(${-secondDeg}deg)`;
+        });
+
+        requestAnimationFrame(animateClock);
+      }
+
+      animateClock();
+    </script>
+  </body>
+</html>
